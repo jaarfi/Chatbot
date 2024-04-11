@@ -8,10 +8,14 @@ import pyvts
 import asyncio
 import os
 import vts
+import requests
 
 server = 'irc.chat.twitch.tv'
 port = 6667
+resturl = "http://127.0.0.1:5000"
 
+def cleanString(message: str):
+    return re.compile('[\W_]+',re.UNICODE).sub('',message)
 
 class Tmi(SingleServerIRCBot):
     def __init__(self, username, password, channel, message_handler, tts):
@@ -32,7 +36,6 @@ class Tmi(SingleServerIRCBot):
         response = self.message_handler(message, self.tts)
 
         if response:
-            response = "Bot: " + response
             print(response)
             client.privmsg(self.channel, response)
 
@@ -78,35 +81,16 @@ def message_handler(msg: irc.client.Event, tts: pyttsx3.Engine):
         tts.runAndWait()
         return response.choices[0].message.content
 
-    if chat_message.startswith('flip'):# and tags['display-name'] == 'jaarfi':
-        chat_message = chat_message[4:]
-        asyncio.run(vts.flip(myvts))
-
-    if chat_message.startswith('slideright'):# and tags['display-name'] == 'jaarfi':
-        chat_message = chat_message[4:]
-        asyncio.run(vts.slideright(myvts))
-
-    if chat_message.startswith('zoomin'):# and tags['display-name'] == 'jaarfi':
-        chat_message = chat_message[4:]
-        asyncio.run(vts.zoomin(myvts))
-
-    if chat_message.startswith('items'):# and tags['display-name'] == 'jaarfi':
-        chat_message = chat_message[4:]
-        asyncio.run(vts.getItems(myvts))
-
-    if chat_message.startswith('pat'):# and tags['display-name'] == 'jaarfi':
-        chat_message = chat_message[3:]
-        if chat_message.isdigit():
-           asyncio.run(vts.toggleHeadpat(myvts, int(chat_message)))
-
-    if chat_message.startswith('turbopat'):# and tags['display-name'] == 'jaarfi':
-        chat_message = chat_message[8:]
-        if chat_message.isdigit():
-           asyncio.run(vts.turboHeadpat(myvts, int(chat_message)))
-
-    if chat_message.startswith('moustache'):# and tags['display-name'] == 'jaarfi':
-        chat_message = chat_message[9:]
-        asyncio.run(vts.zoomMoustache(myvts))
+    else:
+        chat_message = chat_message.split()
+        url = resturl
+        for i in range(len(chat_message)):
+            cleaned = cleanString(chat_message[i])
+            if not cleaned == "":
+                url = url + "/" + cleaned
+        response = requests.get(url)
+        if response:
+            return response.text
     return
 
 
@@ -115,8 +99,4 @@ engine = pyttsx3.init()
 print(engine.getProperty('voice'))
 engine.setProperty('voice', engine.getProperty('voices')[0].id)
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-myvts  = pyvts.vts()
-asyncio.run(vts.connect_auth(myvts))
-
 start_bot(message_handler, engine)

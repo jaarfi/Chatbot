@@ -1,0 +1,46 @@
+would like to use CHANNEL POINTS to do some fun stuff
+Fun things i want to implement (also useful stuff)
+    VTS:
+        summersault
+        headpats
+        turboheadpats
+        activate expressions
+        activate effects
+        changing physics
+        DEDICATED WEBPAGE:
+            pinning stuff to model
+            resize props
+
+    Spotify:
+        current song
+        skip song
+        queue song
+    OBS:
+        ?Filters?
+        VoiceChangers/Filters
+        Move stuff around
+
+    GPT stuff
+	
+currently NO CHANNEL POINTS until affiliate
+	we're just gonna use commands in chat
+
+locally running chatbot
+    uses my account / jaarfibot
+    constantly monitoring chat
+    whenever it sees a command (!):
+        takes that command
+        if the message contains whitespace, its split
+        the first part will be command, second will be param
+        sends rest get
+
+restful api
+    takes command
+    runs the appropriately named function in vts
+
+NEXT STEPS:
+    implement more vts functions
+    properly launch rest apis on a server
+    run chatbot on a server
+    switch to fastapi
+    pydantic for vts json requests whatever
