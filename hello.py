@@ -1,9 +1,21 @@
-# hello.py
+import asyncio
+import models
+import jaarfivts
 
-from flask import Flask
+myvts = jaarfivts.JaarfiVts()
 
-app = Flask(__name__)
 
-@app.route("/")
-def hello_world():
-    return "Hello, World!"
+async def connect(vts: jaarfivts.JaarfiVts):
+    await vts.connect()
+    await vts.authenticate(models.AuthenticationTokenRequest())
+    # await vts.request(models.AvailableModelsRequest())
+    request = models.ModelLoadRequest(
+        data=models.ModelLoadData(model_id="7e8ee3b101fc429f94f501407fccb8bc")
+    )
+    print(request.model_dump_json(by_alias=True))
+    a = await vts.request(request)
+    print(a)
+    await vts.close()
+
+
+asyncio.run(connect(myvts))

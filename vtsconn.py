@@ -1,6 +1,7 @@
 import os.path
 import time
 import pyvts
+import models
 
 
 class vtsconn:
@@ -10,14 +11,9 @@ class vtsconn:
 
     async def connect_auth(self):
         await self.myvts.connect()
-        if not os.path.exists("./authentication_token.txt"):
-            await self.myvts.request_authenticate_token()  # get token
-            with open("./authentication_token.txt", "w") as file:
-                file.write(self.myvts.authentic_token)
-
-        with open("./authentication_token.txt") as file:
-            self.myvts.authentic_token = file.read()
-        await self.myvts.request_authenticate()  # use token
+        await self.myvts.request_authenticate_token(
+            models.AuthenticationTokenRequest()
+        )  # get token
         await self.myvts.close()
 
     async def flip(self, steps: int):

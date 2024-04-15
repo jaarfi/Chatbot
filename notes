@@ -21,7 +21,8 @@ Fun things i want to implement (also useful stuff)
         Move stuff around
 
     GPT stuff
-	
+
+
 currently NO CHANNEL POINTS until affiliate
 	we're just gonna use commands in chat
 
@@ -43,4 +44,10 @@ NEXT STEPS:
     properly launch rest apis on a server
     run chatbot on a server
     switch to fastapi
-    pydantic for vts json requests whatever
+    HARD TODO:
+        properly name all the files
+    async context managers using contextlib as a module
+
+    models need to validate the responses properly
+        test with 
+            models.ModelLoadData.model_validate({"modelID":"a"})
