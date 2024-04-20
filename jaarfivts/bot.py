@@ -4,11 +4,10 @@ import random
 import pyttsx3
 from openai import OpenAI
 import re
-import pyvts
-import asyncio
+import fun
 import os
-import vts
-import requests
+import asyncio
+import jaarfivts
 
 server = "irc.chat.twitch.tv"
 port = 6667
@@ -64,12 +63,12 @@ def message_handler(msg: irc.client.Event, tts: pyttsx3.Engine):
         if chat_message.isdigit():
             return "You rolled a {}".format(random.randint(1, int(chat_message)))
 
-    if chat_message.startswith("tts") and tags["display-name"] == "jaarfi":
+    if chat_message.startswith("tts"):
         chat_message = chat_message[3:]
         engine.say(chat_message)
         engine.runAndWait()
 
-    if chat_message.startswith("gpt") and tags["display-name"] == "jaarfi":
+    if chat_message.startswith("gpt"):
         chat_message = chat_message[3:]
 
         response = client.chat.completions.create(
@@ -90,17 +89,16 @@ def message_handler(msg: irc.client.Event, tts: pyttsx3.Engine):
         tts.say(response.choices[0].message.content)
         tts.runAndWait()
         return response.choices[0].message.content
+    
+    if chat_message.startswith("all"):
+        asyncio.run(fun.main())
 
-    else:
-        chat_message = chat_message.split()
-        url = resturl
-        for i in range(len(chat_message)):
-            cleaned = cleanString(chat_message[i])
-            if not cleaned == "":
-                url = url + "/" + cleaned
-        response = requests.get(url, headers={"Password": "examplepass"})
-        if response:
-            return response.text
+    if chat_message.startswith("expression "):
+        chat_message = chat_message[11:]
+        
+        settings = jaarfivts.JaarfiVts(ws_ip="127.0.0.1")
+        fun = asyncio.run(fun.create_fun(settings))
+        asyncio.run(fun.toggleExpression(chat_message))
     return
 
 

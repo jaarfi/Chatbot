@@ -1,7 +1,7 @@
 import os.path
 import time
 import pyvts
-import models
+import jaarfivts.models as models
 
 
 class vtsconn:

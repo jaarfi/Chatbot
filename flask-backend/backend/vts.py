@@ -31,6 +31,7 @@ class vtsconn:
                     0, 0, size=0, rot=int(360 / steps), relative=True, move_time=0
                 )
             )
+        print(response)
         await self.myvts.close()
         return "response"
 

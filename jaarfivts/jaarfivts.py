@@ -10,12 +10,13 @@ from pathlib import Path
 import aiofiles
 import aiofiles.os
 import platformdirs
+import logging
+import asyncio
 
 APPNAME = "JaarfiVts"
 APPAUTHOR = "Jaarfi"
 TOKEN_DIR = platformdirs.user_data_path(APPNAME, APPAUTHOR)
 TOKEN_FILE = TOKEN_DIR / "token.txt"
-
 
 class Token:
     def __init__(self, path):
@@ -45,31 +46,31 @@ class JaarfiVts:
 
     Args
     ----------
-    plugin_info : dict of {"plugin_name", "developer", "plugin_icon", "authentication_token_path"}
-
-        Information about your plugin.
-
-    vts_api_info: dict of {"version", "name", "port"}
-        Informatiopn about VtubeStudio API.
+    port: The port VTS has opened its WS on
+    token_path: where the token file should be saved
+    ws_ip: The ip VTS has opened its WS on, 127.0.0.1 seems to be faster than localhost, but localhost seems safer
 
     """
 
-    def __init__(self, port: int = 8001, token_path=TOKEN_FILE) -> None:
+    def __init__(
+        self, port: int = 8001, token_path=TOKEN_FILE, ws_ip: str = "localhost"
+    ) -> None:
         self.port = port
         self.websocket = None
         self.auth_token = Token(token_path)
         self.connected = False
+        self.ws_ip = ws_ip
 
     async def connect(self) -> None:
         """Connect to VtubeStudio API server"""
         try:
-            self.websocket = await websockets.connect(f"ws://localhost:{self.port}")
+            self.websocket = await websockets.connect(f"ws://{self.ws_ip}:{self.port}")
             self.connected = True
 
         except ConnectionError as e:
             print("Error: ", e)
             print("Please ensure VTubeStudio is running and")
-            print("the API is running on ws://localhost:", str(self.port))
+            print(f"the api is running on ws://{self.ws_ip}:{self.port}")
 
     async def close(self) -> None:
         """
@@ -94,8 +95,24 @@ class JaarfiVts:
         """
         await self.websocket.send(request_msg.model_dump_json(by_alias=True))
         response_msg = await self.websocket.recv()
-        response_dict = json.loads(response_msg)
+        response_dict = await asyncio.to_thread(json.loads, s = response_msg)
         return response_dict
+    
+    async def fireAndForget(self, request_msg: models.BaseRequest):
+        """
+        Send request to VTubeStudio
+
+        Args
+        ----------
+        request_msg : requests_vts.BaseRequest
+            A generic Request
+
+        Returns
+        -------
+        response_dict
+            Message from VTubeStudio API, data is stored in ``return_dict["data"]``
+        """
+        await self.websocket.send(request_msg.model_dump_json(by_alias=True))
 
     async def make_authentication_token_request(
         self, request_msg: models.AuthenticationTokenRequest
@@ -126,12 +143,9 @@ class JaarfiVts:
                 authentication_token_request
             )
             await self.auth_token.save()
-        await self.make_authentication_request(
-            models.AuthenticationRequest(
-                data=models.AuthenticationData(
-                    plugin_name=authentication_token_request.data.plugin_name,
-                    plugin_developer=authentication_token_request.data.plugin_developer,
-                    authentication_token=self.auth_token.token,
-                )
-            )
+        data = models.AuthenticationRequestData(
+            plugin_name=authentication_token_request.data.plugin_name,
+            plugin_developer=authentication_token_request.data.plugin_developer,
+            authentication_token=self.auth_token.token,
         )
+        await self.make_authentication_request(models.AuthenticationRequest(data=data))

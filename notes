@@ -48,6 +48,6 @@ NEXT STEPS:
         properly name all the files
     async context managers using contextlib as a module
 
-    models need to validate the responses properly
-        test with 
-            models.ModelLoadData.model_validate({"modelID":"a"})
+    make unittests test according to Hiyori_a (neuro)
+    test model size -100 to 100 in rel and abs or only in rel and 0 to 100 in abs
+    
