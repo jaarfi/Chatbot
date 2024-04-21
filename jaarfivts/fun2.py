@@ -10,17 +10,21 @@ import time
 import asyncio
 from dataclasses import dataclass
 from typing import Callable, Optional, ClassVar
+import Worker
 
 from async_tkinter_loop import async_handler, async_mainloop
 
 nest_asyncio.apply()
+expressions = []
 
+
+root = tk.Tk() 
 
 @dataclass
 class WorkItem:
     request: models.BaseRequest
     response: models.BaseResponse
-    callback_function: Optional[Callable]
+    callback_function: Optional[Callable] = None
 
 async def worker(name, request_queue: asyncio.Queue, response_queue: asyncio.Queue, vts: jaarfivts.JaarfiVts):
     await vts.connect()
@@ -104,48 +108,69 @@ async def getCurrentModelSize(request_queue: asyncio.Queue):
             callback_function=lambda response: popUp(response.data.model_position.size)
             )
     )
-    
 
-async def metaWorker(meta_queue: asyncio.Queue):
-    while True:
-        request = await meta_queue.get()
-        
-        request_queue = asyncio.Queue()
-        response_queue = asyncio.Queue()
-        asyncio.create_task(worker(f'worker', request_queue, response_queue, jaarfivts.JaarfiVts(ws_ip="127.0.0.1")))
-        print("got em")
-        asyncio.create_task(request(request_queue))
+async def saveExpressions(request_queue: asyncio.Queue):
+    await request_queue.put(
+        WorkItem(
+            request=models.ExpressionStateRequest(),
+            response=models.ExpressionStateResponse,
+            callback_function= lambda response: setExpressionList(response.data.expressions)
+            )
+    )
+
+async def activateExpression(request_queue: asyncio.Queue, file: str):
+    await request_queue.put(
+        WorkItem(
+            request=models.ExpressionActivationRequest(
+                data=models.ExpressionActivationRequestData(
+                    expression_file=file, 
+                    active=True
+                    )
+            ),
+            response=models.ExpressionActivationResponse,
+            callback_function= None
+        )
+    )
+
+async def deactivateExpression(request_queue: asyncio.Queue, file: str):
+    await request_queue.put(
+        WorkItem(
+            request=models.ExpressionActivationRequest(
+                data=models.ExpressionActivationRequestData(
+                    expression_file=file, 
+                    active=False
+                    )
+            ),
+            response=models.ExpressionActivationResponse,
+            callback_function= None
+        )
+    )
+
+def setExpressionList(expressionlist):
+    for expression in expressionlist:
+        name = expression.name
+        ttk.Button(root, text=name).pack()
 
 def popUp(message):
     messagebox.showinfo(message)
 
-async def guitask(meta_queue):
-    root = tk.Tk() 
+async def guitask():
+    asyncio.run(Worker.create_worker(saveExpressions))
 
     root.geometry("500x500")
     a = ttk.Label(root, text ="Hello World")
-    ttk.Button(root, text="flip", command=lambda: asyncio.run(meta_queue.put(flip))).pack()
-    ttk.Button(root, text="rainbow", command=lambda: asyncio.run(meta_queue.put(rainbow))).pack()
-    ttk.Button(root, text="sitze", command=lambda: asyncio.run(meta_queue.put(getCurrentModelSize))).pack()
+    ttk.Button(root, text="flip", command=lambda: asyncio.run(Worker.create_worker(flip))).pack()
+    ttk.Button(root, text="rainbow", command=lambda: asyncio.run(Worker.create_worker(rainbow))).pack()
+    ttk.Button(root, text="sitze", command=lambda: asyncio.run(Worker.create_worker(getCurrentModelSize))).pack()
 
     a.pack()
 
     async_mainloop(root)
 
-async def printafter():
-    await asyncio.sleep(1)
-    print("after")
-
 async def main():
-    asyncio.create_task(metaWorker(meta_queue))
-    asyncio.create_task(guitask(meta_queue))
+    asyncio.create_task(guitask())
     await asyncio.sleep(0)
-    #asyncio.create_task(fun.flip(request_queue))
-    #size = await fun.getCurrentModelSize(request_queue, response_queue)
-    #print(size)
-    #asyncio.create_task(fun.rainbow(request_queue))
 
-meta_queue = asyncio.Queue()
-
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 
