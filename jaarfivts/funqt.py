@@ -11,7 +11,6 @@ import asyncio
 from dataclasses import dataclass
 from typing import Callable, Optional, ClassVar, List
 import Worker
-import faker
 
 from async_tkinter_loop import async_handler, async_mainloop
 
@@ -35,40 +34,12 @@ async def create_gui():
     await gui._ainit()
 
 
-class DragDropListbox(tk.Listbox):
-    """A Tkinter listbox with drag'n'drop reordering of entries."""
-
-    def __init__(self, master, **kw):
-        kw["selectmode"] = tk.SINGLE
-        tk.Listbox.__init__(self, master, kw)
-        self.bind("<Button-1>", self.setCurrent)
-        self.bind("<B1-Motion>", self.shiftSelection)
-        self.curIndex = None
-
-    def setCurrent(self, event):
-        self.curIndex = self.nearest(event.y)
-
-    def shiftSelection(self, event):
-        i = self.nearest(event.y)
-        if i < self.curIndex:
-            x = self.get(i)
-            self.delete(i)
-            self.insert(i + 1, x)
-            self.curIndex = i
-        elif i > self.curIndex:
-            x = self.get(i)
-            self.delete(i)
-            self.insert(i - 1, x)
-            self.curIndex = i
-
-
 class GUI:
+
     def __init__(self) -> None:
         self.expressions = None
         self.v = tk.IntVar()
         self.v.set(1)
-        self.trigger_response_connections = []
-        self.actions_dict = {}
         pass
 
     async def _ainit(self):
@@ -201,136 +172,99 @@ class GUI:
             )
         )
         kill_event.set()
-        pass
 
     def popUp(self, message):
         messagebox.showinfo(message)
 
     async def guitask(self):
         q = asyncio.Queue()
-        e = asyncio.Event()
-        Worker.Worker(self.saveExpressions(e, q), q)
-        asyncio.run(e.wait())
+        Worker.Worker(self.saveExpressions(asyncio.Event(), q), q)
 
         root.geometry("500x500")
-        labelframe = ttk.LabelFrame(root, text="Trigger-Action Connections")
+        a = ttk.Label(root, text="Hello World")
+        ttk.Button(
+            root,
+            text="flip",
+            command=lambda q=asyncio.Queue(): Worker.Worker(self.flip(q, 1), q),
+        ).pack()
+        ttk.Button(
+            root,
+            text="rainbow",
+            command=lambda q=asyncio.Queue(): Worker.Worker(self.rainbow(q), q),
+        ).pack()
+        ttk.Button(
+            root,
+            text="exp",
+            command=lambda q=asyncio.Queue(): Worker.Worker(self.saveExpressions(q), q),
+        ).pack()
+        ttk.Button(
+            root,
+            text="size",
+            command=lambda q=asyncio.Queue(): Worker.Worker(
+                self.getCurrentModelSize(q), q
+            ),
+        ).pack()
+        ttk.Button(
+            root,
+            text="prit",
+            command=lambda: print(self.expressions),
+        ).pack()
+        ttk.Button(root, text="Bonuses", command=self.popup_bonus).pack()
+        ttk.Button(root, text="readio", command=self.popup_trigger_response).pack()
+        ttk.Button(
+            root,
+            text="toggle",
+            command=lambda: self.helper(self.expressions[self.v.get()]),
+        ).pack()
 
-        m = tk.Menu(root, tearoff=0)
-        m.add_command(
-            label="Add new Connection",
-            command=lambda: self.popup_trigger_action(labelframe),
-        )
-
-        ttk.Button(root, text="flip", command=self.fliphelper).pack()
-
-        def do_popup(event):
-            try:
-                m.tk_popup(event.x_root, event.y_root)
-            finally:
-                m.grab_release()
-
-        labelframe.bind("<Button-3>", do_popup)
-
-        labelframe.pack(fill="both", expand=True, side="bottom")
+        a.pack()
 
         async_mainloop(root)
 
-    def popup_trigger_action(self, root):
-        win = tk.Toplevel()
-        win.wm_title("Window")
-        win.geometry("500x500")
-
-        triggers = ttk.LabelFrame(win, text="Triggers")
-        actions = ttk.LabelFrame(win, text="Actions")
-        listbox = DragDropListbox(actions)
-
-        actions_menu = tk.Menu(win, tearoff=0)
-
-        expression_add_menu = tk.Menu(root, tearoff=0)
-
-        counter = 0
-
-        def helper(expression):
-            print(expression.name)
-            listbox.insert(1, expression.name)
-
-        for expression in self.expressions:
-            self.actions_dict[expression.name] = (
-                lambda expression=expression: self.togglehelper(expression)
-            )
-            expression_add_menu.add_command(
-                label=expression.name,
-                command=lambda expression=expression: helper(expression),
-            )
-
-        actions_menu.add_cascade(label="Expressions", menu=expression_add_menu)
-
-        def do_popup_actions(event):
-            try:
-                actions_menu.tk_popup(event.x_root, event.y_root)
-            finally:
-                actions_menu.grab_release()
-
-        listbox.pack()
-        actions.bind("<Button-3>", do_popup_actions)
-        actions.pack(fill="both", expand=True, side="right")
-        triggers.pack(fill="both", expand=True, side="left")
-
-        def helper2():
-            listbox_list = listbox.get(0, "end")
-            command_list = [self.actions_dict[item] for item in listbox_list]
-            for command in command_list:
-                command()
-            win.destroy()
-
-        ttk.Button(win, text="Okay", command=helper2).pack(side="bottom")
-
-    def popup_trigger_response(self, root):
+    def popup_bonus(self):
         win = tk.Toplevel()
         win.wm_title("Window")
 
+        l = tk.Label(win, text="Input")
+        l.grid(row=0, column=0)
+
+        for i, expression in enumerate(self.expressions):
+            ttk.Button(
+                win,
+                text=expression.name,
+                command=lambda expression=expression: self.helper(expression),
+            ).grid(row=i, column=0)
+
+        b = ttk.Button(win, text="Okay", command=win.destroy)
+        b.grid(row=1, column=0)
+
+    def popup_trigger_response(self):
+        win = tk.Toplevel()
+        win.wm_title("Window")
+
+        l = tk.Label(win, text="Input")
+        b = ttk.Button(win, text="Okay", command=win.destroy).pack()
         self.v.set(0)
 
         for i, expression in enumerate(self.expressions):
             ttk.Radiobutton(
-                win,
-                text=expression.name,
-                variable=self.v,
-                command=lambda: print("b"),
-                value=i,
-            ).grid()
+                root, text=expression.name, variable=self.v, command=print(), value=i
+            ).pack()
 
-        def helper():
-            self.newExpressionItem(root, self.expressions[self.v.get()])
-            win.destroy()
-
-        ttk.Button(win, text="Okay", command=helper).grid()
-
-    def togglehelper(self, expression):
+    def helper(self, expression):
         q = asyncio.Queue()
-        event = asyncio.Event()
         kill_event = asyncio.Event()
         Worker.Worker(
             self.toggleExpression(expression.file, kill_event, q), q, kill_event
         )
 
-    def fliphelper(self):
+    def helper2(self):
         q = asyncio.Queue()
-        Worker.Worker(self.flip(q, 1), q)
-
-    def newExpressionItem(self, root, expression):
-        l = ttk.Label(root, text=expression.name)
-        m = tk.Menu(root, tearoff=0)
-        m.add_command(label="Delete", command=l.destroy)
-
-        def do_popup(event):
-            try:
-                m.tk_popup(event.x_root, event.y_root)
-            finally:
-                m.grab_release()
-
-        l.bind("<Button-3>", do_popup)
-        l.pack()
+        kill_event = asyncio.Event()
+        expression = self.expressions[self.v.get()]
+        Worker.Worker(
+            self.toggleExpression(expression.file, kill_event, q), q, kill_event
+        )
 
 
 if __name__ == "__main__":

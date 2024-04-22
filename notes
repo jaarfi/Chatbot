@@ -50,4 +50,6 @@ NEXT STEPS:
 
     make unittests test according to Hiyori_a (neuro)
     test model size -100 to 100 in rel and abs or only in rel and 0 to 100 in abs
+
+    pong game using your model?????
     

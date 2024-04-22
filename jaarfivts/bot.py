@@ -89,13 +89,13 @@ def message_handler(msg: irc.client.Event, tts: pyttsx3.Engine):
         tts.say(response.choices[0].message.content)
         tts.runAndWait()
         return response.choices[0].message.content
-    
+
     if chat_message.startswith("all"):
         asyncio.run(fun.main())
 
     if chat_message.startswith("expression "):
         chat_message = chat_message[11:]
-        
+
         settings = jaarfivts.JaarfiVts(ws_ip="127.0.0.1")
         fun = asyncio.run(fun.create_fun(settings))
         asyncio.run(fun.toggleExpression(chat_message))

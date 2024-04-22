@@ -18,6 +18,7 @@ APPAUTHOR = "Jaarfi"
 TOKEN_DIR = platformdirs.user_data_path(APPNAME, APPAUTHOR)
 TOKEN_FILE = TOKEN_DIR / "token.txt"
 
+
 class Token:
     def __init__(self, path):
         self.path = Path(path)
@@ -95,9 +96,9 @@ class JaarfiVts:
         """
         await self.websocket.send(request_msg.model_dump_json(by_alias=True))
         response_msg = await self.websocket.recv()
-        response_dict = await asyncio.to_thread(json.loads, s = response_msg)
+        response_dict = await asyncio.to_thread(json.loads, s=response_msg)
         return response_dict
-    
+
     async def fireAndForget(self, request_msg: models.BaseRequest):
         """
         Send request to VTubeStudio

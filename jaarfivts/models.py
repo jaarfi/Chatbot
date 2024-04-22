@@ -766,7 +766,7 @@ class NDIConfigRequestData(_ModelRequests):
 
     @field_validator("custom_width_ndi")
     @classmethod
-    def validate_dimensions(cls, v: int) -> int:
+    def validate_dimensions_ndi_width(cls, v: int) -> int:
         if v == -1:
             return v
         if v % 16 == 0 and 256 <= v <= 8192:
@@ -777,7 +777,7 @@ class NDIConfigRequestData(_ModelRequests):
 
     @field_validator("custom_height_ndi")
     @classmethod
-    def validate_dimensions(cls, v: int) -> int:
+    def validate_dimensions_ndi_width(cls, v: int) -> int:
         if v == -1:
             return v
         if v % 8 == 0 and 256 <= v <= 8192:

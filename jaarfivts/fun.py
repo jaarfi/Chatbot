@@ -3,6 +3,7 @@ import models
 import asyncio
 import time
 import nest_asyncio
+
 nest_asyncio.apply()
 
 
@@ -47,7 +48,7 @@ class Fun:
                 )
             )
         diff = time.time() - t1
-        print(number_of_frames/diff)
+        print(number_of_frames / diff)
 
     async def getItemsInScene(self):
         response = await self.vts.request(
@@ -211,29 +212,28 @@ class Fun:
                 )
             )
         )
-    
-    async def tintArtmeshes(self, color_r: int, color_b: int, color_g: int, art_meshes: list[str]):
+
+    async def tintArtmeshes(
+        self, color_r: int, color_b: int, color_g: int, art_meshes: list[str]
+    ):
         response = await self.vts.request(
             models.ColorTintRequest(
                 data=models.ColorTintRequestData(
                     color_tint=models.ColorTint(
-                        color_r=color_r,
-                        color_b=color_b,
-                        color_g=color_g
+                        color_r=color_r, color_b=color_b, color_g=color_g
                     ),
-                    art_mesh_matcher=models.ArtMeshMatcher(
-                        name_exact=art_meshes
-                    )
+                    art_mesh_matcher=models.ArtMeshMatcher(name_exact=art_meshes),
                 )
             )
         )
+
     async def rainbow(self, repetitions: int):
         increase = True
         colors = [0, 255, 0]
         change = 20
-        for i in range(2*repetitions):
+        for i in range(2 * repetitions):
             for color in range(3):
-                for i in range(int(255/change)):
+                for i in range(int(255 / change)):
                     if increase:
                         colors[color] = colors[color] + change
                         if colors[color] > 255:
@@ -242,31 +242,32 @@ class Fun:
                         colors[color] = colors[color] - change
                         if colors[color] < 0:
                             colors[color] = 0
-                    await self.vts.request(models.ColorTintRequest(
-                        data=models.ColorTintRequestData(
-                            color_tint=models.ColorTint(
-                            color_r=colors[1],
-                            color_b=colors[2],
-                            color_g=colors[0] 
-                            ),
-                            art_mesh_matcher=models.ArtMeshMatcher(
-                                tint_all=True
+                    await self.vts.request(
+                        models.ColorTintRequest(
+                            data=models.ColorTintRequestData(
+                                color_tint=models.ColorTint(
+                                    color_r=colors[1],
+                                    color_b=colors[2],
+                                    color_g=colors[0],
+                                ),
+                                art_mesh_matcher=models.ArtMeshMatcher(tint_all=True),
                             )
                         )
-                    ))
-                    await asyncio.sleep(1/30)
+                    )
+                    await asyncio.sleep(1 / 30)
                 increase = not increase
-
-
 
 
 async def main():
     settings = jaarfivts.JaarfiVts(ws_ip="127.0.0.1")
     fun = await create_fun(settings)
     await fun.resetModel()
-    await fun.flip(3,3)
+    await fun.flip(3, 3)
+    await fun.rainbow(1)
+    await fun.turboHeadpat()
     await fun.getCurrentModelSize()
     await fun.vts.close()
+
 
 settings = jaarfivts.JaarfiVts(ws_ip="127.0.0.1")
 abc = asyncio.run(create_fun(settings))
