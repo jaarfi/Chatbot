@@ -70,14 +70,18 @@ class GUI:
         self.v.set(1)
         self.trigger_response_connections = []
         self.actions_dict = {}
+        self.q = asyncio.Queue()
         pass
 
     async def _ainit(self):
         asyncio.create_task(self.guitask())
         await asyncio.sleep(0)
 
-    async def flip(self, request_queue: asyncio.Queue, rotation: int):
-        for i in range(60 * rotation):
+    def flipCaller(self, rotations: int):
+        return self.flip(rotations, self.q)
+    
+    async def flip(self, rotations: int, request_queue: asyncio.Queue):
+        for i in range(60 * rotations):
             await request_queue.put(
                 WorkItem(
                     work_to_be_done=models.MoveModelRequest(
@@ -92,6 +96,9 @@ class GUI:
                 )
             )
             await asyncio.sleep(1 / 60)
+
+    def rainbowCaller(self):
+        return self.rainbow(self.q)
 
     async def rainbow(self, request_queue: asyncio.Queue):
         print("im in rainbow")
@@ -129,6 +136,9 @@ class GUI:
                     await asyncio.sleep(1 / 60)
                 increase = not increase
 
+    def getCurrentModelSizeCaller(self):
+        return self.getCurrentModelSize(self, self.q)
+    
     async def getCurrentModelSize(self, request_queue: asyncio.Queue):
         await request_queue.put(
             WorkItem(
@@ -139,6 +149,9 @@ class GUI:
                 ),
             )
         )
+
+    def saveExpressionsCaller(self):
+        return self.saveExpressions(self.q)
 
     async def saveExpressions(self, request_queue: asyncio.Queue):
         await request_queue.put(
@@ -153,6 +166,9 @@ class GUI:
 
     def setExpressions(self, expressions):
         self.expressions = expressions
+
+    def toggleExpressionCaller(self, file):
+        return self.toggleExpression(file, self.q)
 
     async def toggleExpression(self, file: str, request_queue: asyncio.Queue):
         expression_currently_active = [
@@ -170,6 +186,9 @@ class GUI:
             )
         )
 
+    async def coroQueuePutterCaller(self, coro):
+        return self.coroQueuePutter(coro, self.q)
+
     async def coroQueuePutter(self, coro, queue):
         await queue.put(WorkItem(work_to_be_done=coro, response=models.BaseResponse))
 
@@ -177,28 +196,29 @@ class GUI:
         root.geometry("500x500")
 
         q = asyncio.Queue()
-        a = [lambda: self.flip(q, 1), lambda: self.rainbow(q)]
-        b = [lambda: self.saveExpressions(q)]
+        a = [self.flipCaller(1), self.rainbowCaller()]
+        b = [self.saveExpressionsCaller()]
         c = [
-            lambda: self.toggleExpression("expression2.exp3.json", q),
-            lambda: self.toggleExpression("meow.exp3.json", q),
+            self.toggleExpressionCaller("expression2.exp3.json"),
+            self.toggleExpressionCaller("meow.exp3.json"),
         ]
-        d = [lambda: self.coroQueuePutter(asyncio.sleep(1), q)]
-        e = [lambda: self.saveExpressions(q)]
+        d = [self.coroQueuePutterCaller(asyncio.sleep(1))]
+        e = [self.saveExpressionsCaller(q)]
         f = [
-            lambda: self.toggleExpression("expression2.exp3.json", q),
-            lambda: self.toggleExpression("meow.exp3.json", q),
+            self.toggleExpressionCaller("expression2.exp3.json"),
+            self.toggleExpressionCaller("meow.exp3.json"),
         ]
-        big = [a, b, c, d, e, f]
+        big = [b, c, d, e, f]
         ttk.Button(
             root,
             text="not wait",
-            command=lambda: Consumer.Consumer(self.callerToCoro(big), q),
+            command=lambda: Consumer.Consumer(self.callerToCoro(big), self.q),
         ).pack()
 
         async_mainloop(root)
 
     def callerToCoro(self, list):
+        self.q = asyncio.Queue()
         newlist = []
         for x in list:
             sublist = []

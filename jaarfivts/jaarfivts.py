@@ -11,6 +11,7 @@ import aiofiles
 import aiofiles.os
 import platformdirs
 import logging
+from time import process_time
 import asyncio
 
 APPNAME = "JaarfiVts"
@@ -80,7 +81,7 @@ class JaarfiVts:
         await self.websocket.close(code=1000, reason="user closed")
         self.connected = False
 
-    async def request(self, request_msg: models.BaseRequest) -> dict:
+    async def request(self, request_msg: models.BaseRequest):
         """
         Send request to VTubeStudio
 
@@ -96,43 +97,31 @@ class JaarfiVts:
         """
         await self.websocket.send(request_msg.model_dump_json(by_alias=True))
         response_msg = await self.websocket.recv()
-        response_dict = await asyncio.to_thread(json.loads, s=response_msg)
-        return response_dict
-
-    async def fireAndForget(self, request_msg: models.BaseRequest):
-        """
-        Send request to VTubeStudio
-
-        Args
-        ----------
-        request_msg : requests_vts.BaseRequest
-            A generic Request
-
-        Returns
-        -------
-        response_dict
-            Message from VTubeStudio API, data is stored in ``return_dict["data"]``
-        """
-        await self.websocket.send(request_msg.model_dump_json(by_alias=True))
+        return response_msg
 
     async def make_authentication_token_request(
         self, request_msg: models.AuthenticationTokenRequest
     ) -> str:
         """Get authentication token from VTubeStudio"""
         response = await self.request(request_msg)
-        if "authenticationToken" in response["data"]:
-            return response["data"]["authenticationToken"]
+        response = models.AuthenticationTokenResponse.model_validate(response)
+        if response.message_type == "AuthenticationTokenResponse":
+            return response.data.authentication_token
         else:
-            raise AuthenticationError(response["data"]["message"])
+            raise AuthenticationError(response.data.message)
 
     async def make_authentication_request(
         self, request_msg: models.AuthenticationRequest
     ):
         """Get authenticated for one session"""
         response = await self.request(request_msg)
-        if not response["data"]["authenticated"]:
+        response = models.AuthenticationResponse.model_validate_json(response)
+        if response.message_type == "APIError":
+            raise AuthenticationError(response.data.message)
+        
+        if not response.data.authenticated:
             await self.auth_token.delete()
-            raise AuthenticationError(response["data"]["reason"])
+            raise AuthenticationError(response.data.reason)
 
     async def authenticate(
         self, authentication_token_request: models.AuthenticationTokenRequest

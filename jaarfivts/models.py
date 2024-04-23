@@ -76,11 +76,26 @@ class BaseResponse(_ModelResponses):
     """The data associated with the response"""
 
 
+class ErrorResponse(_ModelResponses):
+    error_id: int = Field(validation_alias="errorID")
+    message: str
+
+
+
 class APIStateRequest(BaseRequest):
     """Request the current state of the API"""
 
     message_type: Literal["APIStateRequest"] = "APIStateRequest"
     data: None = None
+
+class APIStateResponseData(_ModelResponses):
+    active: bool
+    v_tube_studio_version: str
+    current_session_authenticated: bool
+
+class APIStateResponse(BaseResponse):
+    message_type: Literal["APIStateResponse", "APIError"]
+    data: Union[APIStateResponseData, ErrorResponse]
 
 
 class AuthenticationTokenRequestData(_ModelRequests):
@@ -110,11 +125,6 @@ class AuthenticationTokenRequest(BaseRequest):
 class AuthenticationTokenResponseDataSuccesful(_ModelResponses):
     authentication_token: Annotated[str, StringConstraints(max_length=64)]
     """The auth token associated with this plugin. When provided with the plugin name and dev that requested it, it can be used to authotize a single session"""
-
-
-class ErrorResponse(_ModelResponses):
-    error_id: int = Field(validation_alias="errorID")
-    message: str
 
 
 class AuthenticationTokenResponse(BaseResponse):
@@ -155,8 +165,8 @@ class AuthenticationResponseData(_ModelResponses):
 
 
 class AuthenticationResponse(BaseResponse):
-    message_type: Literal[" AuthenticationResponse"] = "AuthenticationResponse"
-    data: AuthenticationResponseData
+    message_type: Literal["AuthenticationResponse", "APIError"]
+    data: Union[AuthenticationResponseData,ErrorResponse]
 
 
 class StatisticsRequest(BaseRequest):

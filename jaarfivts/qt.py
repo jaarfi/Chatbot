@@ -1,12 +1,21 @@
-async def trigger_hotkey(animation):
-    global myvts
-    if not myvts.websocket.open:
-        print("Connection to VTube Studio is closed. Trying to reconnect...")
-        await connect_auth()
-    try:
-        send_hotkey_request = myvts.vts_request.requestTriggerHotKey(animation)
-        await myvts.request(send_hotkey_request)
-    except websockets.exceptions.ConnectionClosedError:
-        print(
-            "Failed to send request to VTube Studio because the connection was closed."
-        )
+import asyncio
+from faker import Faker
+
+fake = Faker()
+
+async def person(name):
+    while True:
+        print(name, "wants to tell you that they loves you")
+        await asyncio.sleep(0.5)
+
+async def main():
+    loop = asyncio.get_event_loop()
+    tasks = []
+    for i in range(4):
+        name = fake.name()
+        tasks.append(loop.create_task(person(name)))
+        await asyncio.sleep(0.2)
+    loop.run_until_complete(tasks)
+    
+
+asyncio.run(main())
