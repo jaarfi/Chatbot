@@ -81,17 +81,18 @@ class ErrorResponse(_ModelResponses):
     message: str
 
 
-
 class APIStateRequest(BaseRequest):
     """Request the current state of the API"""
 
     message_type: Literal["APIStateRequest"] = "APIStateRequest"
     data: None = None
 
+
 class APIStateResponseData(_ModelResponses):
     active: bool
     v_tube_studio_version: str
     current_session_authenticated: bool
+
 
 class APIStateResponse(BaseResponse):
     message_type: Literal["APIStateResponse", "APIError"]
@@ -166,7 +167,7 @@ class AuthenticationResponseData(_ModelResponses):
 
 class AuthenticationResponse(BaseResponse):
     message_type: Literal["AuthenticationResponse", "APIError"]
-    data: Union[AuthenticationResponseData,ErrorResponse]
+    data: Union[AuthenticationResponseData, ErrorResponse]
 
 
 class StatisticsRequest(BaseRequest):

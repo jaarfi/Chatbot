@@ -1,14 +1,16 @@
-import models
+import Jaarfivts.models as models
 from collections import deque
 from typing import Coroutine, Callable, Union, Optional
 from dataclasses import dataclass
 from time import process_time
+
 
 @dataclass
 class WorkItem:
     work_to_be_done: Union[models.BaseRequest, Coroutine]
     response: Optional[models.BaseResponse]
     callback_function: Optional[Callable] = None
+
 
 def flip(duration: float, rotations: int):
     t = process_time()
@@ -32,6 +34,7 @@ def flip(duration: float, rotations: int):
     diff = process_time() - t
     print("sokcing took", diff)
     return deq
+
 
 def rainbow():
     deq = deque()
@@ -58,9 +61,7 @@ def rainbow():
                                     color_b=colors[2],
                                     color_g=colors[0],
                                 ),
-                                art_mesh_matcher=models.ArtMeshMatcher(
-                                    tint_all=True
-                                ),
+                                art_mesh_matcher=models.ArtMeshMatcher(tint_all=True),
                             )
                         ),
                         response=models.ColorTintResponse,
@@ -69,17 +70,18 @@ def rainbow():
             increase = not increase
     return deq
 
- 
+
 def getCurrentModelSize(callback: Callable):
     deq = deque()
     deq.append(
         WorkItem(
             work_to_be_done=models.CurrentModelRequest(),
             response=models.CurrentModelResponse,
-            callback_function = callback,
+            callback_function=callback,
         )
     )
     return deq
+
 
 def saveExpressions(callback: Callable):
     deq = deque()
@@ -87,7 +89,7 @@ def saveExpressions(callback: Callable):
         WorkItem(
             work_to_be_done=models.ExpressionStateRequest(),
             response=models.ExpressionStateResponse,
-            callback_function=callback
+            callback_function=callback,
         )
     )
     return deq

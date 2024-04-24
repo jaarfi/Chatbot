@@ -4,15 +4,11 @@ My take on the vts class
 
 from pyvts.error import AuthenticationError
 import websockets
-import models
-import json
+from . import models
 from pathlib import Path
 import aiofiles
 import aiofiles.os
 import platformdirs
-import logging
-from time import process_time
-import asyncio
 
 APPNAME = "JaarfiVts"
 APPAUTHOR = "Jaarfi"
@@ -104,7 +100,7 @@ class JaarfiVts:
     ) -> str:
         """Get authentication token from VTubeStudio"""
         response = await self.request(request_msg)
-        response = models.AuthenticationTokenResponse.model_validate(response)
+        response = models.AuthenticationTokenResponse.model_validate_json(response)
         if response.message_type == "AuthenticationTokenResponse":
             return response.data.authentication_token
         else:
@@ -118,7 +114,7 @@ class JaarfiVts:
         response = models.AuthenticationResponse.model_validate_json(response)
         if response.message_type == "APIError":
             raise AuthenticationError(response.data.message)
-        
+
         if not response.data.authenticated:
             await self.auth_token.delete()
             raise AuthenticationError(response.data.reason)

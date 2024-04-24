@@ -1,7 +1,7 @@
 from unittest import IsolatedAsyncioTestCase
 import unittest
-from . import jaarfivts
-from . import models
+import jaarfivts
+import models
 import time
 
 events = []
@@ -24,7 +24,7 @@ class Test(IsolatedAsyncioTestCase):
     async def test_authentication_token(self):
         request = models.AuthenticationTokenRequest()
         response = await self.vts.request(request)
-        response = models.AuthenticationTokenResponse.model_validate(response)
+        response = models.AuthenticationTokenResponse.model_validate_json(response)
 
     async def test_authentication_valid_token(self):
         request = models.AuthenticationRequest(
@@ -33,46 +33,46 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.AuthenticationResponse.model_validate(response)
+        response = models.AuthenticationResponse.model_validate_json(response)
 
     async def test_authentication_invalid_token(self):
         request = models.AuthenticationRequest(
             data=models.AuthenticationRequestData(authentication_token="a")
         )
         response = await self.vts.request(request)
-        response = models.AuthenticationResponse.model_validate(response)
+        response = models.AuthenticationResponse.model_validate_json(response)
 
     async def test_statistics(self):
         request = models.StatisticsRequest()
         response = await self.vts.request(request)
-        response = models.StatisticsResponse.model_validate(response)
+        response = models.StatisticsResponse.model_validate_json(response)
 
     async def test_vts_folder_info(self):
         request = models.VTSFolderInfoRequest()
         response = await self.vts.request(request)
-        response = models.VTSFolderInfoResponse.model_validate(response)
+        response = models.VTSFolderInfoResponse.model_validate_json(response)
 
     async def test_current_model(self):
         request = models.CurrentModelRequest()
         response = await self.vts.request(request)
-        response = models.CurrentModelResponse.model_validate(response)
+        response = models.CurrentModelResponse.model_validate_json(response)
 
     async def test_available_models(self):
         request = models.AvailableModelsRequest()
         response = await self.vts.request(request)
-        response = models.AvailableModelsResponse.model_validate(response)
+        response = models.AvailableModelsResponse.model_validate_json(response)
 
     async def test_model_loaded_invalid_model_id(self):
         request = models.ModelLoadRequest(data=models.ModelLoadRequestData(model_id=""))
         response = await self.vts.request(request)
-        response = models.ModelLoadResponse.model_validate(response)
+        response = models.ModelLoadResponse.model_validate_json(response)
 
     async def test_model_loaded_valid_model_id(self):
         request = models.ModelLoadRequest(
             data=models.ModelLoadRequestData(model_id=self.MODEL_ID)
         )
         response = await self.vts.request(request)
-        response = models.ModelLoadResponse.model_validate(response)
+        response = models.ModelLoadResponse.model_validate_json(response)
         time.sleep(
             2
         )  # when the model is being loaded again, we have to wait for it to finish loading or other tests will fail
@@ -88,7 +88,7 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.MoveModelResponse.model_validate(response)
+        response = models.MoveModelResponse.model_validate_json(response)
         try:
             assert response.message_type == "MoveModelResponse"
         except:
@@ -97,14 +97,14 @@ class Test(IsolatedAsyncioTestCase):
     async def test_hotkeys_in_current_model(self):
         request = models.HotkeysInCurrentModelRequest()
         response = await self.vts.request(request)
-        response = models.HotkeysInCurrentModelResponse.model_validate(response)
+        response = models.HotkeysInCurrentModelResponse.model_validate_json(response)
 
     async def test_hotkey_trigger_invalid(self):
         request = models.HotkeyTriggerRequest(
             data=models.HotkeyTriggerRequestData(hotkey_id="")
         )
         response = await self.vts.request(request)
-        response = models.HotkeyTriggerResponse.model_validate(response)
+        response = models.HotkeyTriggerResponse.model_validate_json(response)
         try:
             assert response.message_type == "APIError"
         except:
@@ -115,7 +115,7 @@ class Test(IsolatedAsyncioTestCase):
             data=models.HotkeyTriggerRequestData(hotkey_id=self.HOTKEY_ID)
         )
         response = await self.vts.request(request)
-        response = models.HotkeyTriggerResponse.model_validate(response)
+        response = models.HotkeyTriggerResponse.model_validate_json(response)
         try:
             assert response.message_type == "HotkeyTriggerResponse"
         except:
@@ -126,7 +126,7 @@ class Test(IsolatedAsyncioTestCase):
             data=models.ExpressionStateRequestData(expression_file="a.exp3.json")
         )
         response = await self.vts.request(request)
-        response = models.ExpressionStateResponse.model_validate(response)
+        response = models.ExpressionStateResponse.model_validate_json(response)
         try:
             assert response.message_type == "APIError"
         except:
@@ -137,7 +137,7 @@ class Test(IsolatedAsyncioTestCase):
             data=models.ExpressionStateRequestData()
         )
         response = await self.vts.request(request)
-        response = models.ExpressionStateResponse.model_validate(response)
+        response = models.ExpressionStateResponse.model_validate_json(response)
         try:
             assert response.message_type == "ExpressionStateResponse"
         except:
@@ -150,7 +150,7 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.ExpressionActivationResponse.model_validate(response)
+        response = models.ExpressionActivationResponse.model_validate_json(response)
         try:
             assert response.message_type == "APIError"
         except:
@@ -163,7 +163,7 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.ExpressionActivationResponse.model_validate(response)
+        response = models.ExpressionActivationResponse.model_validate_json(response)
         try:
             assert response.message_type == "ExpressionActivationResponse"
         except:
@@ -172,7 +172,7 @@ class Test(IsolatedAsyncioTestCase):
     async def test_art_mesh_list(self):
         request = models.ArtMeshListRequest()
         response = await self.vts.request(request)
-        response = models.ArtMeshListResponse.model_validate(response)
+        response = models.ArtMeshListResponse.model_validate_json(response)
 
     async def test_color_tint(self):
         request = models.ColorTintRequest(
@@ -184,7 +184,7 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.ColorTintResponse.model_validate(response)
+        response = models.ColorTintResponse.model_validate_json(response)
         try:
             assert response.message_type == "ColorTintResponse"
             assert response.data.matched_art_meshes > 0
@@ -194,24 +194,24 @@ class Test(IsolatedAsyncioTestCase):
     async def test_scene_color_overlay_info(self):
         request = models.SceneColorOverlayInfoRequest()
         response = await self.vts.request(request)
-        response = models.SceneColorOverlayInfoResponse.model_validate(response)
+        response = models.SceneColorOverlayInfoResponse.model_validate_json(response)
 
     async def test_face_found(self):
         request = models.FaceFoundRequest()
         response = await self.vts.request(request)
-        response = models.FaceFoundResponse.model_validate(response)
+        response = models.FaceFoundResponse.model_validate_json(response)
 
     async def test_input_parameter_list(self):
         request = models.InputParameterListRequest()
         response = await self.vts.request(request)
-        response = models.InputParameterListResponse.model_validate(response)
+        response = models.InputParameterListResponse.model_validate_json(response)
 
     async def test_parameter_value_invalid(self):
         request = models.ParameterValueRequest(
             data=(models.ParameterValueRequestData(name="a"))
         )
         response = await self.vts.request(request)
-        response = models.ParameterValueResponse.model_validate(response)
+        response = models.ParameterValueResponse.model_validate_json(response)
         try:
             assert response.message_type == "APIError"
         except:
@@ -222,7 +222,7 @@ class Test(IsolatedAsyncioTestCase):
             data=(models.ParameterValueRequestData(name=self.PARAM_NAME))
         )
         response = await self.vts.request(request)
-        response = models.ParameterValueResponse.model_validate(response)
+        response = models.ParameterValueResponse.model_validate_json(response)
         try:
             assert response.message_type == "ParameterValueResponse"
         except:
@@ -231,7 +231,7 @@ class Test(IsolatedAsyncioTestCase):
     async def test_live2d_parameter_list(self):
         request = models.Live2DParameterListRequest()
         response = await self.vts.request(request)
-        response = models.Live2DParameterListResponse.model_validate(response)
+        response = models.Live2DParameterListResponse.model_validate_json(response)
 
     async def test_parameter_creation(self):
         request = models.ParameterCreationRequest(
@@ -244,14 +244,14 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.ParameterCreationResponse.model_validate(response)
+        response = models.ParameterCreationResponse.model_validate_json(response)
 
     async def test_parameter_deletion(self):
         request = models.ParameterDeletionRequest(
             data=models.ParameterDeletionRequestData(parameter_name="test")
         )
         response = await self.vts.request(request)
-        response = models.ParameterDeletionResponse.model_validate(response)
+        response = models.ParameterDeletionResponse.model_validate_json(response)
 
     async def test_inject_parameter_data_invalid(self):
         request = models.InjectParameterDataRequest(
@@ -260,7 +260,7 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.InjectParameterDataResponse.model_validate(response)
+        response = models.InjectParameterDataResponse.model_validate_json(response)
         try:
             assert response.message_type == "APIError"
         except:
@@ -273,7 +273,7 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.InjectParameterDataResponse.model_validate(response)
+        response = models.InjectParameterDataResponse.model_validate_json(response)
         try:
             assert response.message_type == "InjectParameterDataResponse"
         except:
@@ -282,43 +282,43 @@ class Test(IsolatedAsyncioTestCase):
     async def test_get_current_model_physics(self):
         request = models.GetCurrentModelPhysicsRequest()
         response = await self.vts.request(request)
-        response = models.GetCurrentModelPhysicsResponse.model_validate(response)
+        response = models.GetCurrentModelPhysicsResponse.model_validate_json(response)
 
     async def test_set_current_model_physics(self):
         request = models.SetCurrentModelPhysicsRequest()
         response = await self.vts.request(request)
-        response = models.SetCurrentModelPhysicsResponse.model_validate(response)
+        response = models.SetCurrentModelPhysicsResponse.model_validate_json(response)
 
     async def test_ndi_config_response(self):
         request = models.NDIConfigRequest()
         response = await self.vts.request(request)
-        response = models.NDIConfigResponse.model_validate(response)
+        response = models.NDIConfigResponse.model_validate_json(response)
 
     async def test_item_list(self):
         request = models.ItemListRequest()
         response = await self.vts.request(request)
-        response = models.ItemListResponse.model_validate(response)
+        response = models.ItemListResponse.model_validate_json(response)
 
     async def test_item_load(self):
         request = models.ItemLoadRequest(
             data=models.ItemLoadRequestData(file_name=self.FILE_NAME)
         )
         response = await self.vts.request(request)
-        response = models.ItemLoadResponse.model_validate(response)
+        response = models.ItemLoadResponse.model_validate_json(response)
 
     async def test_item_unload(self):
         request = models.ItemUnloadRequest(
             data=models.ItemUnloadRequestData(unload_all_in_scene=True)
         )
         response = await self.vts.request(request)
-        response = models.ItemUnloadResponse.model_validate(response)
+        response = models.ItemUnloadResponse.model_validate_json(response)
 
     async def test_item_animation_control(self):
         request = models.ItemAnimationControlRequest(
             data=models.ItemAnimationControlRequestData(item_instance_id=self.FILE_NAME)
         )
         response = await self.vts.request(request)
-        response = models.ItemAnimationControlResponse.model_validate(response)
+        response = models.ItemAnimationControlResponse.model_validate_json(response)
 
     async def test_item_move(self):
         request = models.ItemMoveRequest(
@@ -327,31 +327,31 @@ class Test(IsolatedAsyncioTestCase):
             )
         )
         response = await self.vts.request(request)
-        response = models.ItemMoveResponse.model_validate(response)
+        response = models.ItemMoveResponse.model_validate_json(response)
 
     async def test_art_mesh_selection(self):
         request = models.ArtMeshSelectionRequest()
         response = await self.vts.request(request)
-        response = models.ArtMeshSelectionResponse.model_validate(response)
+        response = models.ArtMeshSelectionResponse.model_validate_json(response)
 
     async def test_item_pin(self):
         request = models.ItemPinRequest(
             data=models.ItemPinRequestData(item_instance_id="a")
         )
         response = await self.vts.request(request)
-        response = models.ItemPinResponse.model_validate(response)
+        response = models.ItemPinResponse.model_validate_json(response)
 
     async def test_post_processing_list(self):
         request = models.PostProcessingListRequest()
         response = await self.vts.request(request)
-        response = models.PostProcessingListResponse.model_validate(response)
+        response = models.PostProcessingListResponse.model_validate_json(response)
 
     async def test_post_processing_update(self):
         request = models.PostProcessingUpdateRequest(
             data=models.PostProcessingUpdateRequestData(randomize_all=True)
         )
         response = await self.vts.request(request)
-        response = models.PostProcessingUpdateResponse.model_validate(response)
+        response = models.PostProcessingUpdateResponse.model_validate_json(response)
 
     async def asyncTearDown(self):
         await self.vts.close()
