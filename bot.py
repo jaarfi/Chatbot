@@ -4,7 +4,6 @@ import random
 import pyttsx3
 from openai import OpenAI
 import re
-import fun
 import os
 import asyncio
 import jaarfivts

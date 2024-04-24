@@ -1,0 +1,12 @@
+aiofiles==23.2.1
+async_tkinter_loop==0.9.3
+events==0.5
+Faker==24.11.0
+irc==20.4.0
+nest_asyncio==1.6.0
+openai==1.23.3
+platformdirs==4.2.1
+pydantic==2.7.1
+pyttsx3==2.90
+pyvts==0.3.2
+websockets==12.0

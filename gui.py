@@ -6,8 +6,8 @@ import nest_asyncio
 import tkinter as tk
 from tkinter import ttk
 import asyncio
-import consumerDeque
-import higher
+import consumer
+import vtsFunctions
 from events import Events
 import random
 from async_tkinter_loop import async_mainloop
@@ -54,12 +54,12 @@ class GUI:
 
         asyncio.run(initConnect())
 
-        a = [lambda: higher.flip(1, 1), lambda: higher.rainbow()]
-        b = [lambda: higher.saveExpressions(lambda exp: self.setExpressions(exp))]
-        c = [lambda: higher.toggleExpression(self.expressions, "meow.exp3.json")]
-        d = [lambda: higher.putCoroIntoDeque(asyncio.sleep(1))]
-        e = [lambda: higher.saveExpressions(lambda exp: self.setExpressions(exp))]
-        f = [lambda: higher.toggleExpression(self.expressions, "meow.exp3.json")]
+        a = [lambda: vtsFunctions.flip(1, 1), lambda: vtsFunctions.rainbow()]
+        b = [lambda: vtsFunctions.saveExpressions(lambda exp: self.setExpressions(exp))]
+        c = [lambda: vtsFunctions.toggleExpression(self.expressions, "meow.exp3.json")]
+        d = [lambda: vtsFunctions.putCoroIntoDeque(asyncio.sleep(1))]
+        e = [lambda: vtsFunctions.saveExpressions(lambda exp: self.setExpressions(exp))]
+        f = [lambda: vtsFunctions.toggleExpression(self.expressions, "meow.exp3.json")]
         big = [a, b, c, d, e, f]
 
         event_list = []
@@ -69,7 +69,7 @@ class GUI:
             ttk.Button(
                 root,
                 text="Button" + str(i),
-                command=lambda: ConsumerDeque.Consumer(big),
+                command=lambda: consumer.Consumer(big),
             ).pack(fill="x", side="bottom")
             event.on_change += self.printEvent
 
@@ -83,7 +83,7 @@ class GUI:
         print("This was triggered by button", i)
 
     def helper(self, event_list, big):
-        random.choice(event_list).on_change += lambda i: ConsumerDeque.Consumer(big)
+        random.choice(event_list).on_change += lambda i: consumer.Consumer(big)
 
 
 if __name__ == "__main__":
