@@ -73,9 +73,8 @@ class Test(IsolatedAsyncioTestCase):
         )
         response = await self.vts.request(request)
         response = models.ModelLoadResponse.model_validate_json(response)
-        time.sleep(
-            2
-        )  # when the model is being loaded again, we have to wait for it to finish loading or other tests will fail
+        time.sleep(2)
+        # when the model is being loaded again, we have to wait for it to finish loading or other tests will fail
 
     async def test_move_model(self):
         request = models.MoveModelRequest(

@@ -115,6 +115,36 @@ def toggleExpression(current_expressions, file: str):
     return deq
 
 
+def activateExpression(file: str):
+    deq = deque()
+    deq.append(
+        WorkItem(
+            work_to_be_done=models.ExpressionActivationRequest(
+                data=models.ExpressionActivationRequestData(
+                    expression_file=file, active=True
+                )
+            ),
+            response=models.ExpressionActivationResponse,
+        )
+    )
+    return deq
+
+
+def deactivateExpression(file: str):
+    deq = deque()
+    deq.append(
+        WorkItem(
+            work_to_be_done=models.ExpressionActivationRequest(
+                data=models.ExpressionActivationRequestData(
+                    expression_file=file, active=False
+                )
+            ),
+            response=models.ExpressionActivationResponse,
+        )
+    )
+    return deq
+
+
 def putCoroIntoDeque(coro):
     deq = deque()
     deq.append(WorkItem(work_to_be_done=coro, response=models.BaseResponse))

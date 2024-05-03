@@ -16,9 +16,12 @@ class consumerConfig:
 
 class Consumer:
     def __init__(self, providers_formatted: List[List[Callable]]) -> None:
+        print("im trying my best")
         asyncio.create_task(self.manager(providers_formatted))
 
     async def manager(self, providers_formatted: List[List[Callable]]):
+        print("yorue fired")
+
         for simultaneous in providers_formatted:
             done_events = []
             start_event = asyncio.Event()

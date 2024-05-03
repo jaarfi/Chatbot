@@ -11,7 +11,8 @@ server = "irc.chat.twitch.tv"
 port = 6667
 resturl = "http://127.0.0.1:5000"
 
-command_list = ["bot","fuck"]
+command_list = ["bot", "fuck"]
+
 
 def cleanString(message: str):
     return re.compile("[\W_]+", re.UNICODE).sub("", message)
@@ -66,20 +67,22 @@ def message_handler(msg: irc.client.Event):
 
     if not command:
         return
-    
+
     if command == "d":
         return dice(args)
-    
+
     if command == "add":
         return addPrintToTrigger(args, trigger_dict)
-        
+
     return
+
 
 def dice(args):
     if args and args[0].isdigit():
         return "You rolled a {}".format(random.randint(1, int(args[0])))
     return "Usage: !d 'number' to roll a dice with 'number' sides"
-    
+
+
 def addPrintToTrigger(args, trigger_dict):
     if not args:
         return "Usage: !add 'word' to print the message if its preceded by 'word'"
@@ -92,11 +95,11 @@ def addPrintToTrigger(args, trigger_dict):
 def printTriggerSource(source):
     print(source)
 
+
 event = Events()
-trigger_dict = {"print":event}
+trigger_dict = {"print": event}
 event.on_change += printTriggerSource
 start_bot(message_handler, trigger_dict)
-
 
 
 "!command arg1 arg2 arg3 arg4"
